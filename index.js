@@ -1,8 +1,9 @@
 (function () {
   "use strict";
 
-  var THROTTLE_DELAY = 500;
+  var THROTTLE_DELAY = 100;
   var INTERVAL_PERIOD = 500;
+  var LISTENERS_NAMES = ["mousemove", "mousedown", "keydown", "scroll", "touchstart"]
 
   function throttle(func, ms) {
     var isThrottled = false,
@@ -30,8 +31,8 @@
 
   /**
    * @param {object} opts - observer options
-   * @param {Array} opts.fireCbOn - fire callback on each delay, each delay should be in ms
-   * @param {Function} opts.cb - callback that will triger after opts.delay of user's IDLE
+   * @param {Array} opts.fireCbOn - fire callback on each IDLE time, each time should be in ms
+   * @param {Function} opts.cb - callback that will triger after opts.fireCbOn of user's IDLE
    * @example 
    * | userIDLEObserver({
    * |  fireCbOn: [500, 10000, 60500],
@@ -39,12 +40,12 @@
    * | });
    */
   function observer (_opts) {
-    var interval = null
-    var idleTime = 0 // in ms
+    var interval = null;
+    var idleTime = 0;
     var opts = {
       fireCbOn: _opts.fireCbOn || [],
       cb: (_opts || {}).cb || function () {}
-    }
+    };
 
     function refreshIDLEInterval() {
       _clearInterval(interval);
@@ -53,6 +54,7 @@
 
         for (var i = 0; i < opts.fireCbOn.length; i++) {
           var idleCursor = opts.fireCbOn[i];
+          // Call opt.cb on specified IDLE time
           if (idleTime <= idleCursor && idleCursor < idleTime + INTERVAL_PERIOD) {
             opts.cb({idle: idleCursor})
           }
@@ -66,14 +68,15 @@
       idleTime = 0;
     }
 
+    // Using throttle for performance reasons
     var throttledStartInterval = throttle(refreshIDLEInterval, THROTTLE_DELAY)
 
-    window.addEventListener("mousemove", throttledStartInterval);
-    window.addEventListener("mousedown", throttledStartInterval);
-    window.addEventListener("keydown", throttledStartInterval);
-    window.addEventListener("scroll", throttledStartInterval);
-    window.addEventListener("touchstart", throttledStartInterval);
+    // Create listeners for each user action
+    for (var i = 0; i < LISTENERS_NAMES.length; i++) {
+      window.addEventListener(LISTENERS_NAMES[i], throttledStartInterval);
+    }
 
+    // Start first interval on init
     refreshIDLEInterval();
   }
 
