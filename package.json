@@ -1,6 +1,6 @@
 {
   "name": "user-idle-observer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Module that helps you to detect user inactivity on client side.",
   "main": "index.js",
   "repository": {
