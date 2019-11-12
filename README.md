@@ -1,16 +1,48 @@
 ## User IDLE Observer
 This lib allows you to track user inactivity time.
 
+
 ### Configs
-  - **fireCbOn**: array with IDLE times
-  - **cb**: callback that will triger on one of IDLE time from fireCbOn
+  - **idleTime**: user inactivity time in ms // by default 2000ms
+  - **cb**: callback that will triger after idleTime of user's IDLE // by default console.log,
+  - **listeners**: event of user interactions // by default ["mousemove", "mousedown", "keydown", "scroll", "touchstart"]
+
+
+### API
+- **destroy**: will destroy observer instance
+
 
 ### Example
+#### CommonJS
 ```javascript
 import IDLEObserver from 'user-idle-observer';
 
-IDLEObserver({
-  fireCbOn: [500, 1550, 4000],
-  cb: ({idle}) =>  { console.log(`User IDLE ${idle}ms`) }
+var observer = IDLEObserver({
+  idleTime: 5000,
+  cb: function (time) { console.log(`User was innactive for ${time}ms`) },
+  listeners: ["mousemove", "mousedown", "keydown"]
 })
+```
+
+#### AMD
+```javascript
+define(['user-idle-observer'] , function (IDLEObserver) {
+  var observer = IDLEObserver({
+    idleTime: 5000,
+    cb: function (time) { console.log(`User was innactive for ${time}ms`) },
+    listeners: ["mousemove", "mousedown", "keydown"]
+  })
+});
+```
+
+#### Gobal scope
+```javascript
+<script src='.../user-idle-observer.js'></script>
+<script>
+  var observer = window.userIDLEObserver({
+    idleTime: 5000,
+    cb: function (time) { console.log(`User was innactive for ${time}ms`) },
+    listeners: ["mousemove", "mousedown", "keydown"]
+  });
+</script>
 ```

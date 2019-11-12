@@ -2,8 +2,7 @@
   "use strict";
 
   var THROTTLE_DELAY = 100;
-  var INTERVAL_PERIOD = 500;
-  var LISTENERS_NAMES = ["mousemove", "mousedown", "keydown", "scroll", "touchstart"]
+  var LISTENERS_NAMES = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "resize", "visibilitychange"];
 
   function throttle(func, ms) {
     var isThrottled = false,
@@ -31,53 +30,65 @@
 
   /**
    * @param {object} opts - observer options
-   * @param {Array} opts.fireCbOn - fire callback on each IDLE time, each time should be in ms
-   * @param {Function} opts.cb - callback that will triger after opts.fireCbOn of user's IDLE
+   * @param {Number} opts.idleTime - fire callback on user inactivity time in ms
+   * @param {Function} opts.cb - callback that will triger after opts.idleTime of user's IDLE
    * @example 
    * | userIDLEObserver({
-   * |  fireCbOn: [500, 10000, 60500],
-   * |  cb: function () {...}
+   * |  idleTime: 3000,
+   * |  cb: function () {...},
+   * |  listeners: ["mousemove", "mousedown", "keydown"]
    * | });
    */
   function observer (_opts) {
+    var _currentIDLETime = 0;
     var interval = null;
-    var idleTime = 0;
     var opts = {
-      fireCbOn: _opts.fireCbOn || [],
-      cb: (_opts || {}).cb || function () {}
+      cb: _opts.cb || console.log,
+      idleTime: _opts.idleTime || 2000,
+      listeners: _opts.listeners || LISTENERS_NAMES
     };
 
     function refreshIDLEInterval() {
       _clearInterval(interval);
       interval = setInterval(() => {
-        idleTime += INTERVAL_PERIOD;
-
-        for (var i = 0; i < opts.fireCbOn.length; i++) {
-          var idleCursor = opts.fireCbOn[i];
-          // Call opt.cb on specified IDLE time
-          if (idleTime <= idleCursor && idleCursor < idleTime + INTERVAL_PERIOD) {
-            opts.cb({idle: idleCursor})
-          }
-        }
-      }, INTERVAL_PERIOD);
-    }
-
-    function _clearInterval() {
-      clearInterval(interval);
-      interval = null;
-      idleTime = 0;
+        _currentIDLETime += opts.idleTime;
+        opts.cb(_currentIDLETime);
+      }, opts.idleTime);
     }
 
     // Using throttle for performance reasons
     var throttledStartInterval = throttle(refreshIDLEInterval, THROTTLE_DELAY)
 
-    // Create listeners for each user action
-    for (var i = 0; i < LISTENERS_NAMES.length; i++) {
-      window.addEventListener(LISTENERS_NAMES[i], throttledStartInterval);
+    function _initListeners () {
+      // Create listeners for each user action
+      for (var i = 0; i < opts.listeners.length; i++) {
+        window.addEventListener(opts.listeners[i], throttledStartInterval);
+      }
     }
 
+    function _clearInterval() {
+      _currentIDLETime = 0;
+      clearInterval(interval);
+      interval = null;
+    }
+
+    function destroy () {
+      _clearInterval();
+      // Destroy listeners for each user action
+      for (var i = 0; i < opts.listeners.length; i++) {
+        window.removeEventListener(opts.listeners[i], throttledStartInterval);
+      }
+    }
+
+    // Init action listeners
+    _initListeners();
+  
     // Start first interval on init
     refreshIDLEInterval();
+
+    return {
+      destroy
+    }
   }
 
   if (typeof module !== "undefined" && module.exports) {
