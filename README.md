@@ -3,9 +3,9 @@ This lib allows you to track user inactivity time.
 
 
 ### Configs
-  - **idleTime**: user inactivity time in ms // by default 2000ms
-  - **cb**: callback that will triger after idleTime of user's IDLE // by default console.log,
-  - **listeners**: event of user interactions // by default ["mousemove", "mousedown", "keydown", "scroll", "touchstart"]
+  - **idleTime**: user inactivity time in ms _// by default 2000ms_,
+  - **cb**: callback that will triger after idleTime of user's IDLE _// by default console.log_,
+  - **listeners**: event of user interactions _// by default ["mousemove", "mousedown", "keydown", "scroll", "touchstart"]_
 
 
 ### API
